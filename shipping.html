@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美鳳的家 - 出貨看板</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 隱藏網頁本身的捲軸，交給 iframe */
+            background-color: #f4f6f8;
+        }
+        
+        /* 讓 iframe 填滿整個螢幕 */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe 
+        src="https://script.google.com/macros/s/您的_GOOGLE_SCRIPT_網址_貼在這裡/exec" 
+        title="美鳳的家出貨看板"
+        allow="autoplay">
+    </iframe>
+
+</body>
+</html>
