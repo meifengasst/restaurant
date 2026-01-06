@@ -31,6 +31,53 @@
         title="美鳳的家出貨看板"
         allow="autoplay">
     </iframe>
+<script>
+    // === 功能 1: 每 10 分鐘 (600,000 毫秒) 自動重整頁面 ===
+    setTimeout(function() {
+        window.location.reload();
+    }, 600000);
 
+    // === 功能 2: 頁面自動上下循環捲動 ===
+    document.addEventListener("DOMContentLoaded", function() {
+        let direction = 1; // 1 代表向下捲動, -1 代表向上捲動
+        const speed = 1;   // 捲動速度 (數值越大越快)
+        const delay = 3000; // 到達頂部或底部時的停留時間 (毫秒)
+        let isPaused = false;
+
+        function autoScroll() {
+            if (isPaused) return;
+
+            // 執行捲動
+            window.scrollBy(0, direction * speed);
+
+            // 檢查是否到達底部
+            if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
+                isPaused = true;
+                direction = -1; // 改為向上
+                setTimeout(() => {
+                    isPaused = false;
+                    requestAnimationFrame(autoScroll);
+                }, delay);
+                return;
+            }
+
+            // 檢查是否回到頂部
+            if (window.scrollY <= 0 && direction === -1) {
+                isPaused = true;
+                direction = 1; // 改為向下
+                setTimeout(() => {
+                    isPaused = false;
+                    requestAnimationFrame(autoScroll);
+                }, delay);
+                return;
+            }
+
+            requestAnimationFrame(autoScroll);
+        }
+
+        // 啟動捲動 (延遲 1 秒後開始)
+        setTimeout(autoScroll, 1000);
+    });
+</script>
 </body>
 </html>
