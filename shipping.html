@@ -32,51 +32,87 @@
         allow="autoplay">
     </iframe>
 <script>
-    // === 功能 1: 每 10 分鐘 (600,000 毫秒) 自動重整頁面 ===
+    // === 設定區 ===
+    const REFRESH_MINUTES = 10;  // 幾分鐘重整一次
+    const SCROLL_SPEED = 1;      // 捲動速度 (1正常, 2快, 0.5慢)
+    const PAUSE_TIME = 3000;     // 到頂/到底時暫停幾毫秒
+    
+    // === 功能 1: 定時重整 ===
     setTimeout(function() {
         window.location.reload();
-    }, 600000);
+    }, REFRESH_MINUTES * 60 * 1000);
 
-    // === 功能 2: 頁面自動上下循環捲動 ===
+    // === 功能 2: 智慧自動捲動 ===
     document.addEventListener("DOMContentLoaded", function() {
-        let direction = 1; // 1 代表向下捲動, -1 代表向上捲動
-        const speed = 1;   // 捲動速度 (數值越大越快)
-        const delay = 3000; // 到達頂部或底部時的停留時間 (毫秒)
+        let scrollContainer = null;
+        let direction = 1; // 1向下, -1向上
         let isPaused = false;
+        let scrollInterval = null;
 
-        function autoScroll() {
-            if (isPaused) return;
-
-            // 執行捲動
-            window.scrollBy(0, direction * speed);
-
-            // 檢查是否到達底部
-            if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
-                isPaused = true;
-                direction = -1; // 改為向上
-                setTimeout(() => {
-                    isPaused = false;
-                    requestAnimationFrame(autoScroll);
-                }, delay);
-                return;
+        // 1. 尋找真正需要捲動的容器 (相容您的 booking.html 架構)
+        function findScrollContainer() {
+            // 優先找 id 為 scrollWrapper 的元素 (您的常用命名)
+            let el = document.getElementById('scrollWrapper');
+            if (el) return el;
+            
+            // 如果沒有，找 document.scrollingElement
+            if (document.scrollingElement && document.scrollingElement.scrollHeight > window.innerHeight) {
+                return document.scrollingElement;
             }
-
-            // 檢查是否回到頂部
-            if (window.scrollY <= 0 && direction === -1) {
-                isPaused = true;
-                direction = 1; // 改為向下
-                setTimeout(() => {
-                    isPaused = false;
-                    requestAnimationFrame(autoScroll);
-                }, delay);
-                return;
-            }
-
-            requestAnimationFrame(autoScroll);
+            
+            // 最後嘗試 window (傳統網頁)
+            return window;
         }
 
-        // 啟動捲動 (延遲 1 秒後開始)
-        setTimeout(autoScroll, 1000);
+        function doScroll() {
+            if (isPaused || !scrollContainer) return;
+
+            // 判斷目前捲動位置與總高度
+            let currentScroll = (scrollContainer === window) ? window.scrollY : scrollContainer.scrollTop;
+            let totalHeight = (scrollContainer === window) ? document.body.scrollHeight : scrollContainer.scrollHeight;
+            let clientHeight = (scrollContainer === window) ? window.innerHeight : scrollContainer.clientHeight;
+
+            // 如果內容不夠長，就不需要捲動
+            if (totalHeight <= clientHeight) return;
+
+            // 執行捲動
+            if (scrollContainer === window) {
+                window.scrollBy(0, direction * SCROLL_SPEED);
+            } else {
+                scrollContainer.scrollTop += (direction * SCROLL_SPEED);
+            }
+
+            // 檢查到底部
+            // 容許 2px 的誤差值
+            if (direction === 1 && (currentScroll + clientHeight >= totalHeight - 2)) {
+                isPaused = true;
+                direction = -1; // 反向
+                setTimeout(() => { isPaused = false; }, PAUSE_TIME);
+            }
+            // 檢查回到頂部
+            else if (direction === -1 && currentScroll <= 0) {
+                isPaused = true;
+                direction = 1; // 正向
+                setTimeout(() => { isPaused = false; }, PAUSE_TIME);
+            }
+        }
+
+        // 2. 啟動機制：等待資料載入後才開始捲動
+        // 使用 setInterval 監測，因為 GAS 資料載入時間不固定
+        let checkStartTimer = setInterval(() => {
+            scrollContainer = findScrollContainer();
+            let totalHeight = (scrollContainer === window) ? document.body.scrollHeight : scrollContainer.scrollHeight;
+            let clientHeight = (scrollContainer === window) ? window.innerHeight : scrollContainer.clientHeight;
+
+            // 只有當「內容高度」確實大於「視窗高度」時，才開始啟動捲動程式
+            if (scrollContainer && totalHeight > clientHeight + 50) { // +50 是個緩衝確保真的有內容
+                clearInterval(checkStartTimer);
+                console.log("捲動目標已鎖定，開始捲動...");
+                
+                // 使用 requestAnimationFrame 效能較好，但為了簡單控制速度，這裡用 setInterval
+                scrollInterval = setInterval(doScroll, 20); // 每 20ms 移動一次
+            }
+        }, 1000); // 每秒檢查一次是否載入完成
     });
 </script>
 </body>
