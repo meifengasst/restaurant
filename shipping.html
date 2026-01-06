@@ -5,17 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>美鳳的家｜出貨看板</title>
     <style>
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden; /* 隱藏外層捲軸 */
-            background-color: #f4f6f8;
-        }
-        iframe {
-            width: 100%; height: 100%;
-            border: none;
-            display: block;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f4f6f8; }
+        iframe { width: 100%; height: 100%; border: none; display: block; }
     </style>
 </head>
 <body>
@@ -25,13 +16,10 @@
     </iframe>
 
     <script>
-        // === 外層只負責：每 10 分鐘重整一次整個頁面 ===
-        // 這樣可以確保 iframe 內的資料也是最新的
-        const REFRESH_MINUTES = 10;
-        
+        // === 外層負責：每 10 分鐘 (600,000 毫秒) 自動重整 ===
         setTimeout(function() {
             window.location.reload();
-        }, REFRESH_MINUTES * 60 * 1000);
+        }, 600000);
     </script>
 </body>
 </html>
